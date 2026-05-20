@@ -4,7 +4,7 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 import numexpr as ne
 from langchain_classic.agents import Tool, AgentExecutor, create_react_agent
 from langchain_classic.tools.retriever import create_retriever_tool
@@ -56,9 +56,8 @@ def build_chroma_database(chunks, persist_directory):
 # --- Caching expensive agent operations ---
 @st.cache_resource
 def init_agent():
-    # Check for API Key
-    if not os.environ.get("GOOGLE_API_KEY"):
-        st.error("Google API Key is not set! Please set the GOOGLE_API_KEY environment variable.")
+    if not os.environ.get("GROQ_API_KEY"):
+        st.error("Groq API Key is not set!")
         return None
 
     embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
@@ -69,7 +68,7 @@ def init_agent():
         embedding_function=embedding_model
     )
 
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.1)
+    llm = ChatGroq(model_name="llama-3.3-70b-versatile", temperature=0.1)
 
     retriever = vector_db.as_retriever(search_type="mmr", search_kwargs={"k": 5, "fetch_k": 30})
 
